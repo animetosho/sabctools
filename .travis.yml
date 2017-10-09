@@ -1,6 +1,3 @@
-# Only build tags
-if: tag IS present
-
 notifications:
   email: false
 

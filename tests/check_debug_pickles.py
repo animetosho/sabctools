@@ -24,7 +24,7 @@ def yCheck(data):
     yend = None
 
     # Check head
-    for i in xrange(min(40, len(data))):
+    for i in range(min(40, len(data))):
         try:
             if data[i].startswith('=ybegin '):
                 splits = 3
@@ -46,7 +46,7 @@ def yCheck(data):
             break
 
     # Check tail
-    for i in xrange(-1, -11, -1):
+    for i in range(-1, -11, -1):
         try:
             if data[i].startswith('=yend '):
                 yend = ySplit(data[i])
@@ -78,13 +78,13 @@ def ySplit(line, splits=None):
 
 for fname in all_crc_fails:
     # Open file
-    print '\n\n ======================================= \n\n'
-    print fname
+    print('\n\n ======================================= \n\n')
+    print(fname)
     data_p = open(fname, "r")
     data_chunks, data_size, lines = pickle.load(data_p)
     data_p.close()
     import pdb; pdb.set_trace()  # breakpoint 612b4eac //
 
     output_buffer, output_filename, crc, crc_yenc, crc_correct = sabyenc.decode_usenet_chunks(data_chunks, data_size)
-    print crc_correct
+    print(crc_correct)
 

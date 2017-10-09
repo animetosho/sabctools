@@ -1,7 +1,7 @@
 import re
 import binascii
 import sabyenc
-import cPickle
+import pickle
 
 ###################
 # SUPPORT FUNCTIONS
@@ -20,11 +20,11 @@ def read_and_split(filename, chunk_size=14):
 def read_pickle(filename):
     with open(filename, 'r') as yencfile:
         try:
-            data_chunks, data_bytes = cPickle.load(yencfile)
+            data_chunks, data_bytes = pickle.load(yencfile)
         except:
             # Reset the pointer and try again
             yencfile.seek(0)
-            data_chunks, data_bytes, lines = cPickle.load(yencfile)
+            data_chunks, data_bytes, lines = pickle.load(yencfile)
     return ''.join(data_chunks), data_chunks, data_bytes
 
 
@@ -36,10 +36,10 @@ def sabyenc_wrapper(data_chunks, data_bytes):
 
 def old_yenc(data_plain):
     """ Use the older decoder to verify the new one """
-    YDEC_TRANS = ''.join([chr((i + 256 - 42) % 256) for i in xrange(256)])
+    YDEC_TRANS = ''.join([chr((i + 256 - 42) % 256) for i in range(256)])
     data = []
     new_lines = data_plain.split('\r\n')
-    for i in xrange(len(new_lines)):
+    for i in range(len(new_lines)):
         if new_lines[i][:2] == '..':
             new_lines[i] = new_lines[i][1:]
     if new_lines[-1] == '.':
@@ -47,7 +47,7 @@ def old_yenc(data_plain):
     data.extend(new_lines)
 
     # Filter out empty ones
-    data = filter(None, data)
+    data = [_f for _f in data if _f]
     yenc, data = yCheck(data)
     ybegin, ypart, yend = yenc
 
@@ -58,7 +58,7 @@ def old_yenc(data_plain):
         data = data.replace(j, chr(i))
     decoded_data = data.translate(YDEC_TRANS)
     crc = binascii.crc32(decoded_data)
-    partcrc = '%08X' % (crc & 2 ** 32L - 1)
+    partcrc = '%08X' % (crc & 2 ** 32 - 1)
 
     if ypart:
         crcname = 'pcrc32'
@@ -77,7 +77,7 @@ def yCheck(data):
     yend = None
 
     # Check head
-    for i in xrange(min(40, len(data))):
+    for i in range(min(40, len(data))):
         try:
             if data[i].startswith('=ybegin '):
                 splits = 3
@@ -99,7 +99,7 @@ def yCheck(data):
             break
 
     # Check tail
-    for i in xrange(-1, -11, -1):
+    for i in range(-1, -11, -1):
         try:
             if data[i].startswith('=yend '):
                 yend = ySplit(data[i])

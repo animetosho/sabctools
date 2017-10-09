@@ -22,8 +22,8 @@ failed_checks = 0
 
 for fname in all_crc_fails:
     # Open file
-    print '\n\n ======================================= \n\n'
-    print fname
+    print('\n\n ======================================= \n\n')
+    print(fname)
     data_p = open(fname, "r")
     try:
         data_chunks, data_size, lines = pickle.load(data_p)
@@ -36,20 +36,20 @@ for fname in all_crc_fails:
     First we check SABYenc
     """
     output_buffer, output_filename, crc, crc_yenc, crc_correct = sabyenc.decode_usenet_chunks(data_chunks, data_size)
-    print '\n---- SABYenc output ----\n'
-    print 'Filename:', output_filename
-    print 'Size:', len(output_buffer)
-    print 'NZB size:', data_size
-    print 'CRC Calc:', crc
-    print 'CRC Yenc:', crc_yenc
-    print 'CRC Bool:', crc_correct
+    print('\n---- SABYenc output ----\n')
+    print('Filename:', output_filename)
+    print('Size:', len(output_buffer))
+    print('NZB size:', data_size)
+    print('CRC Calc:', crc)
+    print('CRC Yenc:', crc_yenc)
+    print('CRC Bool:', crc_correct)
 
     """
     Validate using _yenc
     """
     data = []
     new_lines = ''.join(data_chunks).split('\r\n')
-    for i in xrange(len(new_lines)):
+    for i in range(len(new_lines)):
         if new_lines[i][:2] == '..':
             new_lines[i] = new_lines[i][1:]
     if new_lines[-1] == '.':
@@ -57,14 +57,14 @@ for fname in all_crc_fails:
     data.extend(new_lines)
 
     # Filter out empty ones
-    data = filter(None, data)
+    data = [_f for _f in data if _f]
     yenc, data = testsupport.yCheck(data)
     ybegin, ypart, yend = yenc
 
     # Different from homemade
     flat_data = ''.join(data)
     decoded_data, crc = _yenc.decode_string(flat_data)[:2]
-    partcrc = '%08X' % ((crc ^ -1) & 2 ** 32L - 1)
+    partcrc = '%08X' % ((crc ^ -1) & 2 ** 32 - 1)
 
     if ypart:
         crcname = 'pcrc32'
@@ -79,20 +79,20 @@ for fname in all_crc_fails:
     if output_buffer != decoded_data:
         # Discrepancy between _yenc and sabyenc
         failed_checks += 1
-        print '\n---- Old-method output ----\n'
-        print 'Filename:', ybegin['name']
-        print 'Size:', len(decoded_data)
-        print 'CRC Calc:', _partcrc
-        print 'CRC Yenc:', partcrc
+        print('\n---- Old-method output ----\n')
+        print('Filename:', ybegin['name'])
+        print('Size:', len(decoded_data))
+        print('CRC Calc:', _partcrc)
+        print('CRC Yenc:', partcrc)
 
         # Where is the difference?
         diff_size = 1
-        for n in xrange(0,len(min(decoded_data, output_buffer)), diff_size):
+        for n in range(0,len(min(decoded_data, output_buffer)), diff_size):
             if decoded_data[n:n+diff_size] != output_buffer[n:n+diff_size]:
-                print '\nDiff location: ', n
-                print output_buffer[n]
-                print decoded_data[n]
+                print('\nDiff location: ', n)
+                print(output_buffer[n])
+                print(decoded_data[n])
                 break
 
-print ''
-print 'FAILS: ', failed_checks
+print('')
+print('FAILS: ', failed_checks)

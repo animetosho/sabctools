@@ -26,7 +26,7 @@ from setuptools import setup, Extension
 
 setup(
     name            = "sabyenc",
-    version         = "3.3.5",
+    version         = "4.0.0",
     author          = "Safihre",
     author_email    = "safihre@sabnzbd.org",
     url             = "https://github.com/sabnzbd/sabnzbd-yenc",
@@ -35,7 +35,7 @@ setup(
     ext_modules     = [Extension("sabyenc", ["src/sabyenc.c"])],
     classifiers     = [
         "Programming Language :: Python",
-        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: C",
         "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
         "Operating System :: Unix",
@@ -50,6 +50,8 @@ yEnc Decoding for Python
 ---------------------------------
 
 Mofied the original yenc module by Alessandro Duca for use within SABnzbd.
+
+Version 4 and above are Python 3-only!
 
 The module was extended to do header parsing and full yEnc decoding from a Python
 list of chunks, the way in which data is retrieved from usenet.
