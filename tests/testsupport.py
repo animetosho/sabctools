@@ -29,8 +29,8 @@ def read_pickle(filename):
 
 
 def sabyenc_wrapper(data_chunks, data_bytes):
-    """ CRC's are """
-    decoded_data, filename, crc_calc, crc_yenc, crc_correct = sabyenc.decode_usenet_chunks(data_chunks, data_bytes)
+    """ CRC's are not comparible between old and new, so ignore """
+    decoded_data, filename, _, _, crc_calc, crc_yenc, crc_correct = sabyenc.decode_usenet_chunks(data_chunks, data_bytes)
     return decoded_data, filename, crc_correct
 
 

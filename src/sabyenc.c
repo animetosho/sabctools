@@ -78,7 +78,7 @@ static uInt crc_tab[256] = {
 static void crc_init(Crc32 *, uInt);
 static void crc_update(Crc32 *, uInt);
 void initsabyenc(void);
-static int decode_buffer_usenet(PyObject *, char *, int, char **, Crc32 *, uInt *,  Bool *);
+static int decode_buffer_usenet(PyObject *, char *, int, char **, uInt *, uInt *, Crc32 *, uInt *,  Bool *);
 static char * find_text_in_pylist(PyObject *, char *, char **, int *);
 int extract_filename_from_pylist(PyObject *, int *, char **, char **, char **);
 int extract_int_from_pylist(PyObject *, int *, char **, char **, int);
@@ -102,8 +102,8 @@ static void crc_update(Crc32 *crc, uInt c) {
     crc->bytes++;
 }
 
-static int decode_buffer_usenet(PyObject *Py_input_list, char *output_buffer, int num_bytes_reserved,
-                                char **filename_out,  Crc32 *crc, uInt *crc_yenc, Bool *crc_correct) {
+static int decode_buffer_usenet(PyObject *Py_input_list, char *output_buffer, int num_bytes_reserved, char **filename_out,
+                                uInt *part_begin, uInt *part_end, Crc32 *crc, uInt *crc_yenc, Bool *crc_correct) {
     // For the list
     Py_ssize_t num_lines;
     int list_index = 0;
@@ -114,7 +114,6 @@ static int decode_buffer_usenet(PyObject *Py_input_list, char *output_buffer, in
     char *crc_holder = NULL;
 
     // Other vars
-    int part_begin = 0;
     int part_size = 0;
     int decoded_bytes = 0;
     int safe_nr_bytes = 0;
@@ -169,13 +168,14 @@ static int decode_buffer_usenet(PyObject *Py_input_list, char *output_buffer, in
             start_loc = find_text_in_pylist(Py_input_list, "begin=", &cur_char, &list_index);
             if(start_loc) {
                 // Get begin
-                part_begin = extract_int_from_pylist(Py_input_list, &list_index, &start_loc, &cur_char, 0);
+                *part_begin = extract_int_from_pylist(Py_input_list, &list_index, &start_loc, &cur_char, 0);
 
                 // Find part-end
                 start_loc = find_text_in_pylist(Py_input_list, "end=", &cur_char, &list_index);
                 if(start_loc) {
                     // Move over a bit
-                    part_size = extract_int_from_pylist(Py_input_list, &list_index, &start_loc, &cur_char, 0) - part_begin + 1;
+                    *part_end = extract_int_from_pylist(Py_input_list, &list_index, &start_loc, &cur_char, 0);
+                    part_size = *part_end - *part_begin + 1;
                 }
             }
 
@@ -183,6 +183,8 @@ static int decode_buffer_usenet(PyObject *Py_input_list, char *output_buffer, in
             if(part_size <= 0  || part_size > num_bytes_reserved) {
                 // Set safe value
                 part_size = (int)(num_bytes_reserved*0.75);
+                *part_end = 0;
+                *part_begin = 0;
             }
 
             // Skip over everything untill end of line, where the content starts
@@ -540,6 +542,8 @@ PyObject* decode_usenet_chunks(PyObject* self, PyObject* args, PyObject* kwds) {
     // Buffers
     char *output_buffer = NULL;
     char *filename_out = NULL;
+    uInt part_begin = 0;
+    uInt part_end = 0;
     uInt output_len = 0;
     int num_bytes_reserved;
     int lp_max;
@@ -579,7 +583,7 @@ PyObject* decode_usenet_chunks(PyObject* self, PyObject* args, PyObject* kwds) {
     crc_init(&crc, crc_value);
 
     // Calculate
-    output_len = decode_buffer_usenet(Py_input_list, output_buffer, num_bytes_reserved, &filename_out, &crc, &crc_yenc, &crc_correct);
+    output_len = decode_buffer_usenet(Py_input_list, output_buffer, num_bytes_reserved, &filename_out, &part_begin, &part_end, &crc, &crc_yenc, &crc_correct);
 
     // Aaah there you are again GIL..
     Py_END_ALLOW_THREADS;
@@ -600,7 +604,7 @@ PyObject* decode_usenet_chunks(PyObject* self, PyObject* args, PyObject* kwds) {
     Py_output_filename = PyUnicode_DecodeLatin1((char *)filename_out, strlen((char *)filename_out), NULL);
 
     // Build output
-    retval = Py_BuildValue("(S,S,L,L,O)", Py_output_buffer, Py_output_filename, (long long)crc.crc, (long long)crc_yenc, crc_correct ? Py_True: Py_False);
+    retval = Py_BuildValue("(S,S,I,I,L,L,O)", Py_output_buffer, Py_output_filename, part_begin, part_end, (long long)crc.crc, (long long)crc_yenc, crc_correct ? Py_True: Py_False);
 
     // Make sure we free all the buffers!
     Py_XDECREF(Py_output_buffer);
