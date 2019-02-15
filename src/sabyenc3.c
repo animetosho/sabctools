@@ -19,7 +19,7 @@
  *=============================================================================
  */
 
-#include "sabyenc.h"
+#include "sabyenc3.h"
 
 /* Typedefs */
 typedef struct {
@@ -77,7 +77,7 @@ static uInt crc_tab[256] = {
 /* Function declarations */
 static void crc_init(Crc32 *, uInt);
 static void crc_update(Crc32 *, uInt);
-PyMODINIT_FUNC PyInit_sabyenc(void);
+PyMODINIT_FUNC PyInit_sabyenc3(void);
 static int decode_buffer_usenet(PyObject *, char *, int, char **, Crc32 *, uInt *,  Bool *);
 static char * find_text_in_pylist(PyObject *, char *, char **, int *);
 int extract_filename_from_pylist(PyObject *, int *, char **, char **, char **);
@@ -85,7 +85,7 @@ uLong extract_int_from_pylist(PyObject *, int *, char **, char **, int);
 
 
 /* Python API requirements */
-static PyMethodDef sabyenc_methods[] = {
+static PyMethodDef sabyenc3_methods[] = {
     {
         "decode_usenet_chunks",
         decode_usenet_chunks,
@@ -95,18 +95,18 @@ static PyMethodDef sabyenc_methods[] = {
     {NULL, NULL, 0, NULL}
 };
 
-static struct PyModuleDef sabyenc_definition = {
+static struct PyModuleDef sabyenc3_definition = {
     PyModuleDef_HEAD_INIT,
-    "sabyenc",
+    "sabyenc3",
     "Processing of raw NNTP-yEnc streams for SABnzbd.",
     -1,
-    sabyenc_methods
+    sabyenc3_methods
 };
 
-PyMODINIT_FUNC PyInit_sabyenc(void) {
+PyMODINIT_FUNC PyInit_sabyenc3(void) {
     // Initialize and add version information
     Py_Initialize();
-    PyObject* module = PyModule_Create(&sabyenc_definition);
+    PyObject* module = PyModule_Create(&sabyenc3_definition);
     PyModule_AddStringConstant(module, "__version__", SABYENC_VERSION);
     return module;
 }
@@ -585,7 +585,7 @@ PyObject* decode_usenet_chunks(PyObject* self, PyObject* args) {
     if(num_bytes_reserved <= 0) {
         lp_max = (int)PyList_Size(Py_input_list);
         for(lp = 0; lp < lp_max; lp++) {
-            num_bytes_reserved += (int)PyString_Size(PyList_GetItem(Py_input_list, lp));
+            num_bytes_reserved += (int)PyByteArray_GET_SIZE(PyList_GetItem(Py_input_list, lp));
         }
     }
 

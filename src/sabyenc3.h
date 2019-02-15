@@ -25,7 +25,7 @@
 #include <string.h>
 
 /* Version information */
-#define SABYENC_VERSION "4.0.0"
+#define SABYENC_VERSION "0.1.0"
 
 /* Do we CRC check? */
 #define CRC_CHECK   0
@@ -55,4 +55,4 @@ typedef int Bool;
 
 /* Functions */
 PyObject* decode_usenet_chunks(PyObject* ,PyObject*);
-PyMODINIT_FUNC initsabyenc(void);
+PyMODINIT_FUNC initsabyenc3(void);
