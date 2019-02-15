@@ -28,7 +28,7 @@ with open("README.md", "r") as file_long_description:
 
 setup(
     name="sabyenc3",
-    version="0.1.0",
+    version="0.1.1",
     author="Safihre",
     author_email="safihre@sabnzbd.org",
     url="https://github.com/sabnzbd/sabyenc/",
